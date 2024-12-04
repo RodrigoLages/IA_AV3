@@ -5,16 +5,18 @@ from functions import load_data, normalize, update_results, build_summary, plot_
 from perceptron import perceptron_train, perceptron_predict
 from adaline import adaline_train, adaline_predict
 
-data, labels = load_data(plot=True)
+data, labels = load_data(plot=False)
 data = normalize(data)
 
 # Hiperparâmetros
 learning_rate=0.01
 epochs=100
 R=10
+tolerance = 1e-4
+patience = 10
 
 # Modelos
-usePerceptron = True
+usePerceptron = False
 useAdaline = True
 useMlp = False
 
@@ -27,6 +29,8 @@ resultsPerceptron = []
 resultsAdaline = []
 resultsMlp = []
 
+# TODO: Implementar a curva de aprendizados para o melhor e pior valor de cada modelo. Vai precisar retornar o MSE no treinamento
+
 for _ in range(R):
     indices = np.arange(n_samples)
     np.random.shuffle(indices)
@@ -38,14 +42,14 @@ for _ in range(R):
 
     # Modelo Perceptron
     if usePerceptron:
-        weights, bias = perceptron_train(X_train, y_train, learning_rate, epochs)
-        predictions = perceptron_predict(X_test, weights, bias)
+        weights = perceptron_train(X_train, y_train, learning_rate, epochs, tolerance, patience)
+        predictions = perceptron_predict(X_test, weights)
         update_results(metricsPerceptron, resultsPerceptron, predictions, y_test)
 
     # Modelo Adaline
     if useAdaline:
-        weights, bias = adaline_train(X_train, y_train, learning_rate, epochs)
-        predictions = adaline_predict(X_test, weights, bias)
+        weights = adaline_train(X_train, y_train, learning_rate, epochs, tolerance, patience)
+        predictions = adaline_predict(X_test, weights)
         update_results(metricsAdaline, resultsAdaline, predictions, y_test)
 
     # Modelo MLP

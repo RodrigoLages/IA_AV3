@@ -27,7 +27,6 @@ def load_data(plot: False):
     return data, labels
 
 def step_function(x):
-    """Função de ativação degrau."""
     return np.where(x >= 0, 1, -1)
 
 def normalize(data):
