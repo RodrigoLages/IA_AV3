@@ -47,7 +47,7 @@ def calculate_metrics(predictions, y_test):
 
     return accuracy, sensitivity, specificity
 
-def update_results(metrics, results, predictions, y_test):
+def update_results(metrics, results, predictions, y_test, mse_history):
     """Atualiza as métricas e resultados para um modelo."""
     accuracy, sensitivity, specificity = calculate_metrics(predictions, y_test)
 
@@ -55,7 +55,7 @@ def update_results(metrics, results, predictions, y_test):
     metrics["sensitivity"].append(sensitivity)
     metrics["specificity"].append(specificity)
 
-    results.append({"accuracy": accuracy, "conf_matrix": conf_matrix(y_test, predictions)})
+    results.append({"accuracy": accuracy, "conf_matrix": conf_matrix(y_test, predictions), "mse": mse_history})
 
 def build_summary(metrics):
     """Constrói um DataFrame com o resumo das métricas."""
@@ -109,5 +109,25 @@ def plot_conf_matrices(conf_matrix1, conf_matrix2, model_name):
     axes[1].set_xlabel("Previsão")
     axes[1].set_ylabel("Valor Real")
     
+    plt.tight_layout()
+    plt.show()
+
+def plot_learning_curves(best_case_mse, worst_case_mse, title):
+    fig, axs = plt.subplots(1, 2, figsize=(12, 6), sharey=True)
+
+    # Melhor caso
+    axs[0].plot(range(1, len(best_case_mse) + 1), best_case_mse, marker='o', linestyle='-', color='g')
+    axs[0].set_title(f"{title} - Melhor Caso")
+    axs[0].set_xlabel("Épocas")
+    axs[0].set_ylabel("Erro Quadrático Médio (MSE)")
+    axs[0].grid(True)
+
+    # Pior caso
+    axs[1].plot(range(1, len(worst_case_mse) + 1), worst_case_mse, marker='o', linestyle='-', color='r')
+    axs[1].set_title(f"{title} - Pior Caso")
+    axs[1].set_xlabel("Épocas")
+    axs[1].grid(True)
+
+    # Ajustar layout
     plt.tight_layout()
     plt.show()

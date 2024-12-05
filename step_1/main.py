@@ -1,17 +1,18 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from functions import load_data, normalize, update_results, build_summary, plot_conf_matrices
+from functions import load_data, normalize, plot_learning_curves, update_results, build_summary, plot_conf_matrices
 from perceptron import perceptron_train, perceptron_predict
 from adaline import adaline_train, adaline_predict
 
-data, labels = load_data(plot=False)
-data = normalize(data)
+# TODO: Ver por que o perceptron demora muito mais que o adaline para rodar
+# TODO: Implementar o MLP
 
 # Hiperparâmetros
+plot = True
+R=100
+epochs=1000
 learning_rate=0.01
-epochs=100
-R=10
 tolerance = 1e-4
 patience = 10
 
@@ -19,6 +20,10 @@ patience = 10
 usePerceptron = False
 useAdaline = True
 useMlp = False
+
+# Carregar e normalizar os dados
+data, labels = load_data(plot)
+data = normalize(data)
 
 # Validação por Monte Carlo.
 n_samples = data.shape[0]
@@ -28,8 +33,6 @@ metricsMlp = {"accuracy": [], "sensitivity": [], "specificity": []}
 resultsPerceptron = []
 resultsAdaline = []
 resultsMlp = []
-
-# TODO: Implementar a curva de aprendizados para o melhor e pior valor de cada modelo. Vai precisar retornar o MSE no treinamento
 
 for _ in range(R):
     indices = np.arange(n_samples)
@@ -42,15 +45,15 @@ for _ in range(R):
 
     # Modelo Perceptron
     if usePerceptron:
-        weights = perceptron_train(X_train, y_train, learning_rate, epochs, tolerance, patience)
+        weights, mse_history = perceptron_train(X_train, y_train, learning_rate, epochs, tolerance, patience)
         predictions = perceptron_predict(X_test, weights)
-        update_results(metricsPerceptron, resultsPerceptron, predictions, y_test)
+        update_results(metricsPerceptron, resultsPerceptron, predictions, y_test, mse_history)
 
     # Modelo Adaline
     if useAdaline:
-        weights = adaline_train(X_train, y_train, learning_rate, epochs, tolerance, patience)
+        weights, mse_history = adaline_train(X_train, y_train, learning_rate, epochs, tolerance, patience)
         predictions = adaline_predict(X_test, weights)
-        update_results(metricsAdaline, resultsAdaline, predictions, y_test)
+        update_results(metricsAdaline, resultsAdaline, predictions, y_test, mse_history)
 
     # Modelo MLP
     if useMlp:
@@ -72,7 +75,9 @@ if usePerceptron:
 
     print("\nResumo das métricas do Perceptron:")
     print(summaryPerceptron)
-    plot_conf_matrices(bestPerceptron["conf_matrix"], worstPerceptron["conf_matrix"], "Perceptron")
+    if (plot):
+        plot_conf_matrices(bestPerceptron["conf_matrix"], worstPerceptron["conf_matrix"], "Perceptron")
+        plot_learning_curves(bestPerceptron["mse"], worstPerceptron["mse"], "Perceptron")
 
 
 if useAdaline:
@@ -82,7 +87,10 @@ if useAdaline:
 
     print("\nResumo das métricas do Adaline:")
     print(summaryAdaline)
-    plot_conf_matrices(bestAdaline["conf_matrix"], worstAdaline["conf_matrix"], "Adaline")
+    if (plot):
+        plot_conf_matrices(bestAdaline["conf_matrix"], worstAdaline["conf_matrix"], "Adaline")
+        plot_learning_curves(bestAdaline["mse"], worstAdaline["mse"], "Adaline")
+    
 
 if useMlp:
     bestMlp = max(resultsMlp, key=lambda x: x['accuracy'])
@@ -91,5 +99,9 @@ if useMlp:
 
     print("\nResumo das métricas do MLP:")
     print(summaryMlp)
-    plot_conf_matrices(bestMlp["conf_matrix"], worstMlp["conf_matrix"], "MLP")
+    if (plot):
+        plot_conf_matrices(bestMlp["conf_matrix"], worstMlp["conf_matrix"], "MLP")
+        plot_learning_curves(bestMlp["mse"], bestMlp["mse"], "MLP")
+
+        
     
