@@ -3,41 +3,36 @@ from functions import step_function
 
 def perceptron_train(data, labels, learning_rate=0.01, epochs=1000, tolerance=1e-4, patience=10):
     n_samples, n_features = data.shape
-    weights = np.zeros(n_features + 1)  # Include bias in the weights vector
-    data = np.hstack((np.ones((n_samples, 1)), data))  # Add bias term to data
+    weights = np.zeros(n_features + 1)  # Inclui o bias nos pesos
+    data = np.hstack((np.ones((n_samples, 1)), data))  # Adiciona o termo de bias aos dados
     no_improve_count = 0
 
     mse_history = []
 
     for epoch in range(epochs):
-        previous_weights = weights.copy()
-        erro = False
-        predictions = []
+        # Calcula a saída linear para todas as amostras
+        linear_output = np.dot(data, weights)
+        predictions = step_function(linear_output)
 
-        for i in range(n_samples):
-            x_t = data[i]
-            linear_output = np.dot(weights, x_t)
-            prediction = step_function(linear_output)
-            predictions.append(prediction)
-            error = labels[i] - prediction
-
-            if error != 0:
-                erro = True
-                weights += (learning_rate * error * x_t) / 2
-
-        # Calculate MSE for this epoch
-        errors = labels - np.array(predictions)
+        # Calcula o erro e o MSE
+        errors = labels - predictions
         mse = np.mean(errors ** 2)
         mse_history.append(mse)
 
-        weight_change = np.linalg.norm(weights - previous_weights)
-        if weight_change < tolerance:
+
+        weight_update = learning_rate * np.dot(errors, data) / n_samples
+        weights += weight_update
+
+        # Critério de parada baseado na norma da atualização dos pesos
+        if np.linalg.norm(weight_update) < tolerance:
+            print(f"Convergência alcançada na época {epoch + 1}")
             break
 
-        # Early stopping
-        if not erro:
+        # Early stopping baseado no erro
+        if mse == 0:
             no_improve_count += 1
             if no_improve_count >= patience:
+                print("Early stopping ativado devido a nenhuma melhora.")
                 break
         else:
             no_improve_count = 0

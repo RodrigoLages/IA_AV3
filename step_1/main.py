@@ -5,19 +5,18 @@ from functions import load_data, normalize, plot_learning_curves, update_results
 from perceptron import perceptron_train, perceptron_predict
 from adaline import adaline_train, adaline_predict
 
-# TODO: Ver por que o perceptron demora muito mais que o adaline para rodar
 # TODO: Implementar o MLP
 
 # Hiperparâmetros
 plot = True
-R=100
+R=500
 epochs=1000
 learning_rate=0.01
 tolerance = 1e-4
 patience = 10
 
 # Modelos
-usePerceptron = False
+usePerceptron = True
 useAdaline = True
 useMlp = False
 
