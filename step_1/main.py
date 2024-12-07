@@ -4,21 +4,24 @@ import matplotlib.pyplot as plt
 from functions import load_data, normalize, plot_learning_curves, update_results, build_summary, plot_conf_matrices
 from perceptron import perceptron_train, perceptron_predict
 from adaline import adaline_train, adaline_predict
+from mlp import mlp_train, mlp_predict
 
 # TODO: Implementar o MLP
 
 # Hiperparâmetros
-plot = True
-R=500
-epochs=1000
+plot = False
+R=10
+epochs=200
 learning_rate=0.01
 tolerance = 1e-4
 patience = 10
+hidden_layers = [25, 25, 25, 25]
+last_layer = 1
 
 # Modelos
-usePerceptron = True
-useAdaline = True
-useMlp = False
+usePerceptron = False
+useAdaline = False
+useMlp = True
 
 # Carregar e normalizar os dados
 data, labels = load_data(plot)
@@ -56,10 +59,9 @@ for _ in range(R):
 
     # Modelo MLP
     if useMlp:
-        # Treinar o modelo MLP
-        # predictions = modelo_mlp.predict(X_test)
-        # update_results(metricsMlp, resultsMlp, predictions, y_test)
-        pass
+        weights, mse_history = mlp_train(X_train, y_train, hidden_layers, last_layer, learning_rate, epochs, tolerance)
+        predictions = mlp_predict(X_test, weights)
+        update_results(metricsMlp, resultsMlp, predictions, y_test, mse_history)
 
 
     if (_+1) % (R/10) == 0:
